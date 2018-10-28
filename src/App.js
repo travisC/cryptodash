@@ -1,26 +1,84 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
+import styled from "styled-components";
+import AppBar from "./components/layout/AppBar";
+const cc = require("cryptocompare");
+
+const AppLayout = styled.div`
+  padding: 40px;
+`;
+
+const Content = styled.div``;
+
+const checkFirstVisit = () => {
+  let cryptoDashData = localStorage.getItem("cryptoDash");
+  if (!cryptoDashData) {
+    return {
+      firstVisit: true,
+      page: "settings"
+    };
+  }
+  return {};
+};
 
 class App extends Component {
+  state = {
+    page: "dashboard",
+    ...checkFirstVisit()
+  };
+
+  componentDidMount = () => {
+    this.fetchCoins();
+  };
+  fetchCoins = async () => {
+    let coinList = (await cc.coinList()).Data;
+    this.setState({ coinList });
+  };
+
+  displayingDashboard = () => this.state.page === "dashboard";
+  displayingSettings = () => this.state.page === "settings";
+  firstVisitMessage = () => {
+    if (this.state.firstVisit) {
+      return (
+        <div>
+          Welcome to CryptoDash, please select your favorite coins to begin.
+        </div>
+      );
+    }
+  };
+  confirmFavorites = () => {
+    localStorage.setItem("cryptoDash", "test");
+    this.setState({
+      firstVisit: false,
+      page: "dashboard"
+    });
+  };
+
+  settingsContent = () => {
+    return (
+      <div>
+        {this.firstVisitMessage()}
+        <div onClick={this.confirmFavorites}>Confirm Favorites</div>
+      </div>
+    );
+  };
+
+  loadingContent = () => {
+    if (!this.state.coinList) {
+      return <div>Loading Coins</div>;
+    }
+  };
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
+      <AppLayout>
+        {AppBar.call(this)}
+        {this.loadingContent() || (
+          <Content>
+            {this.displayingSettings() && this.settingsContent()}
+          </Content>
+        )}
+      </AppLayout>
     );
   }
 }
