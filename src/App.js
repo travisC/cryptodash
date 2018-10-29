@@ -57,6 +57,12 @@ class App extends Component {
       firstVisit: false,
       page: "dashboard"
     });
+    localStorage.setItem(
+      "cryptoDash",
+      JSON.stringify({
+        favorites: this.state.favorites
+      })
+    );
   };
 
   settingsContent = () => {
