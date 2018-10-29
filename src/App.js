@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import styled from "styled-components";
+import _ from "lodash";
 import AppBar from "./AppBar";
 import CoinList from "./CoinList";
 const cc = require("cryptocompare");
@@ -10,6 +11,8 @@ const AppLayout = styled.div`
 `;
 
 const Content = styled.div``;
+
+const MAX_FAVORITES = 10;
 
 const checkFirstVisit = () => {
   let cryptoDashData = localStorage.getItem("cryptoDash");
@@ -25,6 +28,7 @@ const checkFirstVisit = () => {
 class App extends Component {
   state = {
     page: "settings",
+    favorites: ["ETH", "BTC", "XMR", "DOGE", "EOS"],
     ...checkFirstVisit()
   };
 
@@ -60,7 +64,10 @@ class App extends Component {
       <div>
         {this.firstVisitMessage()}
         <div onClick={this.confirmFavorites}>Confirm Favorites</div>
-        <div>{CoinList.call(this)}</div>
+        <div>
+          {CoinList.call(this, true)}
+          {CoinList.call(this)}
+        </div>
       </div>
     );
   };
@@ -70,6 +77,21 @@ class App extends Component {
       return <div>Loading Coins</div>;
     }
   };
+
+  addCoinToFavorites = key => {
+    let favorites = [...this.state.favorites];
+    if (favorites.length < MAX_FAVORITES) {
+      favorites.push(key);
+      this.setState({ favorites });
+    }
+  };
+
+  removeCoinFromFavorites = key => {
+    let favorites = [...this.state.favorites];
+    this.setState({ favorites: _.pull(favorites, key) });
+  };
+
+  isInFavorites = key => _.includes(this.state.favorites, key);
 
   render() {
     return (

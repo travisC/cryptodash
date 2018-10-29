@@ -1,6 +1,11 @@
 import React from "react";
-import styled from "styled-components";
-import { subtleBoxShadow, lightBlueBackground, greenBoxShadow } from "./Style";
+import styled, { css } from "styled-components";
+import {
+  subtleBoxShadow,
+  lightBlueBackground,
+  greenBoxShadow,
+  redBoxShadow
+} from "./Style";
 
 const CoinGrid = styled.div`
   display: grid;
@@ -17,6 +22,22 @@ const CoinTile = styled.div`
   }
   ${subtleBoxShadow};
   ${lightBlueBackground};
+
+  ${props =>
+    props.favorite &&
+    css`
+      &:hover {
+        cursor: pointer;
+        ${redBoxShadow};
+      }
+    `};
+  ${props =>
+    props.chosen &&
+    !props.favorite &&
+    css`
+      pointer-events: none;
+      opacity: 0.4;
+    `};
 `;
 
 const CoinHeaderGrid = styled.div`
@@ -28,26 +49,52 @@ const CoinSymbol = styled.div`
   justify-self: right;
 `;
 
-export default function() {
+const DeleteIcon = styled.div`
+  justify-self: right;
+  display: none;
+  ${CoinTile}:hover & {
+    color: red;
+    display: block;
+  }
+`;
+
+export default function(favorites = false) {
+  let coinKeys = favorites
+    ? this.state.favorites
+    : Object.keys(this.state.coinList).slice(0, 100);
   return (
     <CoinGrid>
-      {Object.keys(this.state.coinList)
-        .slice(0, 100)
-        .map(coin => (
-          <CoinTile>
-            <CoinHeaderGrid>
-              <div>{this.state.coinList[coin].CoinName}</div>
-              <CoinSymbol>{this.state.coinList[coin].Symbol}</CoinSymbol>
-            </CoinHeaderGrid>
-            <img
-              style={{ height: "50px" }}
-              alt={this.state.coinList[coin].CoinName}
-              src={`http://cryptocompare.com/${
-                this.state.coinList[coin].ImageUrl
-              }`}
-            />
-          </CoinTile>
-        ))}
+      {coinKeys.map(coinKey => (
+        <CoinTile
+          chosen={this.isInFavorites(coinKey)}
+          favorite={favorites}
+          onClick={
+            favorites
+              ? () => {
+                  this.removeCoinFromFavorites(coinKey);
+                }
+              : () => {
+                  this.addCoinToFavorites(coinKey);
+                }
+          }
+        >
+          <CoinHeaderGrid>
+            <div>{this.state.coinList[coinKey].CoinName}</div>
+            {favorites ? (
+              <DeleteIcon>X</DeleteIcon>
+            ) : (
+              <CoinSymbol>{this.state.coinList[coinKey].Symbol}</CoinSymbol>
+            )}
+          </CoinHeaderGrid>
+          <img
+            style={{ height: "50px" }}
+            alt={this.state.coinList[coinKey].CoinName}
+            src={`http://cryptocompare.com/${
+              this.state.coinList[coinKey].ImageUrl
+            }`}
+          />
+        </CoinTile>
+      ))}
     </CoinGrid>
   );
 }
