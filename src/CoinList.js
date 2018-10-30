@@ -6,10 +6,16 @@ import {
   greenBoxShadow,
   redBoxShadow
 } from "./Style";
+//import _ from "lodash";
 
 const CoinGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  ${props =>
+    props.count &&
+    css`
+      grid-template-columns: repeat(${props.count > 5 ? props.count : 5}, 1fr);
+    `};
   grid-gap: 15px;
   margin-top: 40px;
 `;
@@ -61,9 +67,10 @@ const DeleteIcon = styled.div`
 export default function(favorites = false) {
   let coinKeys = favorites
     ? this.state.favorites
-    : Object.keys(this.state.coinList).slice(0, 100);
+    : (this.state.filteredCoins && Object.keys(this.state.filteredCoins)) ||
+      Object.keys(this.state.coinList).slice(0, 100);
   return (
-    <CoinGrid>
+    <CoinGrid count={favorites && this.state.favorites.length}>
       {coinKeys.map(coinKey => (
         <CoinTile
           chosen={this.isInFavorites(coinKey)}

@@ -2,8 +2,11 @@ import React, { Component } from "react";
 import "./App.css";
 import styled from "styled-components";
 import _ from "lodash";
+import fuzzy from "fuzzy";
 import AppBar from "./AppBar";
 import CoinList from "./CoinList";
+import Search from "./Search";
+import { ConfirmButton } from "./Button";
 const cc = require("cryptocompare");
 
 const AppLayout = styled.div`
@@ -11,6 +14,11 @@ const AppLayout = styled.div`
 `;
 
 const Content = styled.div``;
+
+const CenterDiv = styled.div`
+  display: grid;
+  justify-content: center;
+`;
 
 const MAX_FAVORITES = 10;
 
@@ -69,9 +77,14 @@ class App extends Component {
     return (
       <div>
         {this.firstVisitMessage()}
-        <div onClick={this.confirmFavorites}>Confirm Favorites</div>
         <div>
           {CoinList.call(this, true)}
+          <CenterDiv>
+            <ConfirmButton onClick={this.confirmFavorites}>
+              Confirm Favorites
+            </ConfirmButton>
+          </CenterDiv>
+          {Search.call(this)}
           {CoinList.call(this)}
         </div>
       </div>
@@ -98,6 +111,39 @@ class App extends Component {
   };
 
   isInFavorites = key => _.includes(this.state.favorites, key);
+
+  handleFilter = _.debounce(inputValue => {
+    // Get all the coin symbols
+    let coinSymbols = Object.keys(this.state.coinList);
+    // Get all the coin names, maps symbol to name
+    let coinNames = coinSymbols.map(sym => this.state.coinList[sym].CoinName);
+    let allStringsToSearch = coinSymbols.concat(coinNames);
+    let fuzzyResults = fuzzy
+      .filter(inputValue, allStringsToSearch, {})
+      .map(result => result.string);
+
+    let filteredCoins = _.pickBy(this.state.coinList, (result, symKey) => {
+      let coinName = result.CoinName;
+      return (
+        // If our fuzzy results contains this symbol OR the coinName, include it (return true).
+        _.includes(fuzzyResults, symKey) || _.includes(fuzzyResults, coinName)
+      );
+    });
+
+    this.setState({
+      filteredCoins
+    });
+  }, 500);
+  filterCoins = e => {
+    let inputValue = _.get(e, "target.value");
+    if (!inputValue) {
+      this.setState({
+        filteredCoins: null
+      });
+      return;
+    }
+    this.handleFilter(inputValue);
+  };
 
   render() {
     return (
