@@ -1,5 +1,5 @@
-import React from "react";
-import styled, { css } from "styled-components";
+import styled, { css } from 'styled-components';
+import React from 'react';
 
 const Logo = styled.div`
   font-size: 1.5em;
@@ -10,13 +10,14 @@ const ControlButton = styled.div`
   ${props =>
     props.active &&
     css`
-      text-shadow: 0px 0px 20px #03ff03;
+      text-shadow: 0px 0px 60px #03ff03;
     `};
 `;
+
 const Bar = styled.div`
   display: grid;
-  grid-template-columns: 180px auto 100px 100px;
   margin-bottom: 40px;
+  grid-template-columns: 180px auto 100px 100px;
 `;
 
 export default function() {
@@ -27,7 +28,7 @@ export default function() {
       {!this.state.firstVisit && (
         <ControlButton
           onClick={() => {
-            this.setState({ page: "dashboard" });
+            this.setState({ page: 'dashboard' });
           }}
           active={this.displayingDashboard()}
         >
@@ -36,7 +37,7 @@ export default function() {
       )}
       <ControlButton
         onClick={() => {
-          this.setState({ page: "settings" });
+          this.setState({ page: 'settings' });
         }}
         active={this.displayingSettings()}
       >
