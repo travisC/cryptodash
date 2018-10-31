@@ -6,6 +6,7 @@ import fuzzy from "fuzzy";
 import AppBar from "./AppBar";
 import CoinList from "./CoinList";
 import Search from "./Search";
+import Dashboard from "./Dashboard";
 import { ConfirmButton } from "./Button";
 const cc = require("cryptocompare");
 
@@ -23,29 +24,50 @@ const CenterDiv = styled.div`
 const MAX_FAVORITES = 10;
 
 const checkFirstVisit = () => {
-  let cryptoDashData = localStorage.getItem("cryptoDash");
+  let cryptoDashData = JSON.parse(localStorage.getItem("cryptoDash"));
   if (!cryptoDashData) {
     return {
       firstVisit: true,
       page: "settings"
     };
   }
-  return {};
+  return {
+    favorites: cryptoDashData.favorites
+  };
 };
 
 class App extends Component {
   state = {
-    page: "settings",
+    page: "dashboard",
     favorites: ["ETH", "BTC", "XMR", "DOGE", "EOS"],
     ...checkFirstVisit()
   };
 
   componentDidMount = () => {
     this.fetchCoins();
+    this.fetchPrices();
   };
   fetchCoins = async () => {
     let coinList = (await cc.coinList()).Data;
     this.setState({ coinList });
+  };
+
+  fetchPrices = async () => {
+    let prices;
+    try {
+      prices = await this.prices();
+    } catch (e) {
+      this.setState({ error: true });
+    }
+    this.setState({ prices });
+  };
+
+  prices = () => {
+    let promises = [];
+    this.state.favorites.forEach(sym => {
+      promises.push(cc.priceFull(sym, "USD"));
+    });
+    return Promise.all(promises);
   };
 
   displayingDashboard = () => this.state.page === "dashboard";
@@ -63,8 +85,10 @@ class App extends Component {
     localStorage.setItem("cryptoDash", "test");
     this.setState({
       firstVisit: false,
-      page: "dashboard"
+      page: "dashboard",
+      prices: null
     });
+    this.fetchPrices();
     localStorage.setItem(
       "cryptoDash",
       JSON.stringify({
@@ -94,6 +118,9 @@ class App extends Component {
   loadingContent = () => {
     if (!this.state.coinList) {
       return <div>Loading Coins</div>;
+    }
+    if (!this.state.prices) {
+      return <div>Loading prices</div>;
     }
   };
 
@@ -152,6 +179,7 @@ class App extends Component {
         {this.loadingContent() || (
           <Content>
             {this.displayingSettings() && this.settingsContent()}
+            {this.displayingDashboard() && Dashboard.call(this)}
           </Content>
         )}
       </AppLayout>
