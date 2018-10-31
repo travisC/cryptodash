@@ -1,7 +1,12 @@
 import React from "react";
 import { CoinGrid, CoinTile, CoinHeaderGrid, CoinSymbol } from "./CoinList";
 import styled, { css } from "styled-components";
-import { fontSizeBig, fontSize3 } from "./Style";
+import {
+  fontSizeBig,
+  fontSize3,
+  subtleBoxShadow,
+  lightBlueBackground
+} from "./Style";
 
 const numberFormat = number => {
   return +(number + "").slice(0, 5);
@@ -28,8 +33,21 @@ const CoinTileCompact = styled(CoinTile)`
   justify-items: right;
 `;
 
+const PaddingBlue = styled.div`
+  ${subtleBoxShadow};
+  ${lightBlueBackground};
+  padding: 5px 5px 20px;
+`;
+
+const ChartGrid = styled.div`
+  display: grid;
+  grid-gap: 15px;
+  grid-template-columns: 1fr 3fr;
+  margin-top: 20px;
+`;
+
 export default function() {
-  return (
+  return [
     <CoinGrid>
       {this.state.prices.map((price, index) => {
         let sym = Object.keys(price)[0];
@@ -38,6 +56,13 @@ export default function() {
           dashboardFavorite: sym === this.state.currentFavorite,
           onClick: () => {
             this.setState({ currentFavorite: sym });
+            localStorage.setItem(
+              "cryptoDash",
+              JSON.stringify({
+                ...JSON.parse(localStorage.getItem("cryptoDash")),
+                currentFavorite: sym
+              })
+            );
           }
         };
         return index < 5 ? (
@@ -64,6 +89,19 @@ export default function() {
           </CoinTileCompact>
         );
       })}
-    </CoinGrid>
-  );
+    </CoinGrid>,
+    <ChartGrid>
+      <PaddingBlue style={{ textAlign: "center" }}>
+        <h2>{this.state.coinList[this.state.currentFavorite].CoinName}</h2>
+        <img
+          style={{ height: "200px" }}
+          alt={this.state.coinList[this.state.currentFavorite].CoinName}
+          src={`http://cryptocompare.com/${
+            this.state.coinList[this.state.currentFavorite].ImageUrl
+          }`}
+        />
+      </PaddingBlue>
+      <PaddingBlue>Charts go here</PaddingBlue>
+    </ChartGrid>
+  ];
 }
