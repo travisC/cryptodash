@@ -37,6 +37,15 @@ export const CoinTile = styled.div`
         ${redBoxShadow};
       }
     `};
+
+  ${props =>
+    props.dashboardFavorite &&
+    css`
+      ${greenBoxShadow};
+      &:hover {
+        pointer-events: none;
+      }
+    `};
   ${props =>
     props.chosen &&
     !props.favorite &&
